@@ -33,14 +33,14 @@ package org.nanohttpd.protocols.http;
  * #L%
  */
 
+import org.nanohttpd.protocols.http.NanoHTTPD.ResponseException;
+import org.nanohttpd.protocols.http.content.CookieHandler;
+import org.nanohttpd.protocols.http.request.Method;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-
-import org.nanohttpd.protocols.http.NanoHTTPD.ResponseException;
-import org.nanohttpd.protocols.http.content.CookieHandler;
-import org.nanohttpd.protocols.http.request.Method;
 
 /**
  * Handles one session, i.e. parses the HTTP request and returns the response.
@@ -84,7 +84,11 @@ public interface IHTTPSession {
      */
     void parseBody(Map<String, String> files) throws IOException, ResponseException;
 
-  Map<String, String> getResponseBody() throws IOException, ResponseException;
+    /**
+     * Retrieves the request body as String
+     * @return the response string
+     */
+    String getRequestBodyString() throws IOException, ResponseException;
 
   /**
      * Get the remote ip address of the requester.
