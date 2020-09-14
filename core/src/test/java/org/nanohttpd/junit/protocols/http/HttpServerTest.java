@@ -272,6 +272,64 @@ public class HttpServerTest {
             }
         }
     }
+    @Test
+    public void testMultipartFormDataUsingResponseBodyMethod() throws IOException {
+        final int testPort = 4589;
+        NanoHTTPD server = null;
+
+        try {
+            server = new NanoHTTPD(testPort) {
+
+                Map<String, String> files = new HashMap<String, String>();
+
+                @Override
+                public Response serve(IHTTPSession session) {
+                    StringBuilder responseMsg = new StringBuilder();
+
+                    try {
+                        this.files = session.getResponseBody();
+                        for (String key : files.keySet()) {
+                            responseMsg.append(key);
+                        }
+                    } catch (Exception e) {
+                        responseMsg.append(e.getMessage());
+                    }
+
+                    return Response.newFixedLengthResponse(responseMsg.toString());
+                }
+            };
+            server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
+
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost("http://localhost:" + testPort);
+
+            final String fileName = "file-upload-test.htm";
+            FileBody bin = new FileBody(new File(getClass().getClassLoader().getResource(fileName).getFile()));
+            StringBody comment = new StringBody("Filename: " + fileName);
+
+            MultipartEntity reqEntity = new MultipartEntity();
+            reqEntity.addPart("bin", bin);
+            reqEntity.addPart("comment", comment);
+            httppost.setEntity(reqEntity);
+
+            HttpResponse response = httpclient.execute(httppost);
+            HttpEntity entity = response.getEntity();
+
+            if (entity != null) {
+                InputStream instream = entity.getContent();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(instream, "UTF-8"));
+                String line = reader.readLine();
+                assertNotNull(line, "Invalid server reponse");
+                assertEquals("Server failed multi-part data parse" + line, "bincomment", line);
+                reader.close();
+                instream.close();
+            }
+        } finally {
+            if (server != null) {
+                server.stop();
+            }
+        }
+    }
 
     @Test
     public void testTempFileInterface() throws IOException {

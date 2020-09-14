@@ -456,7 +456,7 @@ public class HTTPSession implements IHTTPSession {
             NanoHTTPD.safeClose(this.outputStream);
         } finally {
             NanoHTTPD.safeClose(r);
-            this.tempFileManager.clear();
+//            this.tempFileManager.clear();
         }
     }
 
@@ -664,6 +664,13 @@ public class HTTPSession implements IHTTPSession {
         } finally {
             NanoHTTPD.safeClose(randomAccessFile);
         }
+    }
+
+    @Override
+    public Map<String, String> getResponseBody() throws IOException, ResponseException {
+        Map<String, String> responseBody = new HashMap<>();
+        parseBody(responseBody);
+        return responseBody;
     }
 
     /**
